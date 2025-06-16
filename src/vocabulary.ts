@@ -28,6 +28,9 @@ export const operators = {
 // Math equals in Russian
 export const equals = 'равно́';
 
+// Alternative form of equals
+export const willBe = 'бу́дет';
+
 // Sample products for shopping practice
 export const products: Product[] = [
   { id: '1', nameEn: 'apples', nameRu: 'я́блоки', price: 35, emoji: '🍎', available: true },

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Eye, EyeOff, ArrowLeft, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { russianNumbers, operators, equals, numberToRussian, generateSliderValues, speak } from '../vocabulary';
+import { russianNumbers, operators, equals, willBe, numberToRussian, generateSliderValues, speak } from '../vocabulary';
 
 // Types
 interface MathProblem {
@@ -410,13 +410,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <div className="mb-6">
               <h4 className="font-semibold text-blue-600 mb-3">Basic Numbers (1-20)</h4>
               <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                {Array.from({length: 10}, (_, i) => i + 1).map(num => (
-                  <div key={num} className="flex justify-between">
-                    <span className="font-mono">{num}</span>
-                    <span className="font-medium">{russianNumbers[num]}</span>
-                  </div>
-                ))}
-                {Array.from({length: 10}, (_, i) => i + 11).map(num => (
+                {Array.from({length: 21}, (_, i) => i % 2 == 0 ? Math.floor(i/2) : Math.floor(i/2) + 11).map(num => (
                   <div key={num} className="flex justify-between">
                     <span className="font-mono">{num}</span>
                     <span className="font-medium">{russianNumbers[num]}</span>
@@ -428,13 +422,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <div className="mb-6">
               <h4 className="font-semibold text-blue-600 mb-3">Tens (20-90)</h4>
               <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                {[20, 30, 40, 50].map(num => (
-                  <div key={num} className="flex justify-between">
-                    <span className="font-mono">{num}</span>
-                    <span className="font-medium">{russianNumbers[num]}</span>
-                  </div>
-                ))}
-                {[60, 70, 80, 90].map(num => (
+                {[20, 60, 30, 70, 40, 80, 50, 90].map(num => (
                   <div key={num} className="flex justify-between">
                     <span className="font-mono">{num}</span>
                     <span className="font-medium">{russianNumbers[num]}</span>
@@ -446,89 +434,39 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <div className="mb-6">
               <h4 className="font-semibold text-blue-600 mb-3">Hundreds</h4>
               <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-mono">100</span>
-                  <span className="font-medium">сто</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">600</span>
-                  <span className="font-medium">шестьсо́т</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">200</span>
-                  <span className="font-medium">две́сти</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">700</span>
-                  <span className="font-medium">семьсо́т</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">300</span>
-                  <span className="font-medium">три́ста</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">800</span>
-                  <span className="font-medium">восемьсо́т</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">400</span>
-                  <span className="font-medium">четы́реста</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">900</span>
-                  <span className="font-medium">девятьсо́т</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">500</span>
-                  <span className="font-medium">пятьсо́т</span>
-                </div>
+                {[100, 600, 200, 700, 300, 800, 400, 900, 500].map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num}</span>
+                    <span className="font-medium">{numberToRussian(num)}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             <div className="mb-6">
               <h4 className="font-semibold text-blue-600 mb-3">Thousands</h4>
               <div className="grid grid-cols-1 gap-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-mono">1,000</span>
-                  <span className="font-medium">ты́сяча</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">2,000</span>
-                  <span className="font-medium">две ты́сячи</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">3,000-4,000</span>
-                  <span className="font-medium">три/четы́ре ты́сячи</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">5,000+</span>
-                  <span className="font-medium">пять/шесть/семь... ты́сяч</span>
-                </div>
+                {[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000].map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num.toLocaleString()}</span>
+                    <span className="font-medium">{numberToRussian(num)}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
             <div className="mb-4">
               <h4 className="font-semibold text-blue-600 mb-3">Math Operations</h4>
               <div className="grid grid-cols-1 gap-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-mono">+</span>
-                  <span className="font-medium">плюс</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">-</span>
-                  <span className="font-medium">ми́нус</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">×</span>
-                  <span className="font-medium">умно́жить на</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-mono">÷</span>
-                  <span className="font-medium">раздели́ть на</span>
-                </div>
+                {Object.entries(operators).map(([symbol, text]) => (
+                  <div key={symbol} className="flex justify-between">
+                    <span className="font-mono">{symbol === '*' ? '×' : symbol === '/' ? '÷' : symbol}</span>
+                    <span className="font-medium">{text}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between">
                   <span className="font-mono">=</span>
-                  <span className="font-medium">равно́ / бу́дет</span>
+                  <span className="font-medium">{equals} / {willBe}</span>
                 </div>
               </div>
             </div>
