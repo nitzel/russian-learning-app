@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(domain:en.wikibooks.org)",
       "Bash(npm start)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:ru.wiktionary.org)"
     ],
     "deny": []
   }

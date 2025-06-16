@@ -1,0 +1,560 @@
+import React, { useState, useEffect } from 'react';
+import { Volume2, Eye, EyeOff, ArrowLeft, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { russianNumbers, operators, equals, numberToRussian, generateSliderValues, speak } from '../vocabulary';
+
+// Types
+interface MathProblem {
+  num1: number;
+  num2: number;
+  operator: '+' | '-' | '*' | '/';
+  result: number;
+}
+
+interface MathSettings {
+  operators: Array<'+' | '-' | '*' | '/'>;
+  minValue: number;
+  maxValue: number;
+}
+
+const sliderValues = generateSliderValues();
+
+// Math Practice Component
+const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const [problem, setProblem] = useState<MathProblem | null>(null);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showVocabulary, setShowVocabulary] = useState(false);
+  const [settings, setSettings] = useState<MathSettings>({
+    operators: ['+'],
+    minValue: 1,
+    maxValue: 20
+  });
+  const [showSettings, setShowSettings] = useState(true);
+
+  const generateProblem = () => {
+    if (settings.operators.length === 0) return;
+
+    const operator = settings.operators[Math.floor(Math.random() * settings.operators.length)];
+    let num1, num2, result;
+    let attempts = 0;
+    const maxAttempts = 100;
+
+    do {
+      attempts++;
+
+      // Randomly choose which value to constrain within the full range
+      const constrainTarget = Math.floor(Math.random() * 3); // 0 = num1, 1 = num2, 2 = result
+
+      switch (operator) {
+        case '+':
+          if (constrainTarget === 0) {
+            // Constrain num1 to range
+            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            result = num1 + num2;
+          } else if (constrainTarget === 1) {
+            // Constrain num2 to range
+            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num1 = Math.floor(Math.random() * settings.maxValue) + 1;
+            result = num1 + num2;
+          } else {
+            // Constrain result to range
+            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num1 = Math.floor(Math.random() * Math.min(result, settings.maxValue)) + 1;
+            num2 = result - num1;
+          }
+          break;
+
+        case '-':
+          if (constrainTarget === 0) {
+            // Constrain num1 to range
+            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * Math.min(num1, settings.maxValue)) + 1;
+            result = num1 - num2;
+          } else if (constrainTarget === 1) {
+            // Constrain num2 to range
+            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num1 = num2 + Math.floor(Math.random() * (settings.maxValue - num2)) + 1;
+            result = num1 - num2;
+          } else {
+            // Constrain result to range
+            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            num1 = result + num2;
+          }
+          break;
+
+        case '*':
+          if (constrainTarget === 0) {
+            // Constrain num1 to range
+            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * Math.min(Math.floor(settings.maxValue / num1), settings.maxValue)) + 1;
+            result = num1 * num2;
+          } else if (constrainTarget === 1) {
+            // Constrain num2 to range
+            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num1 = Math.floor(Math.random() * Math.min(Math.floor(settings.maxValue / num2), settings.maxValue)) + 1;
+            result = num1 * num2;
+          } else {
+            // Constrain result to range
+            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num1 = Math.floor(Math.random() * Math.min(result, settings.maxValue)) + 1;
+            if (result % num1 === 0) {
+              num2 = result / num1;
+            } else {
+              // Find a factor of result
+              const factors = [];
+              for (let i = 1; i <= Math.min(result, settings.maxValue); i++) {
+                if (result % i === 0) factors.push(i);
+              }
+              if (factors.length > 0) {
+                num1 = factors[Math.floor(Math.random() * factors.length)];
+                num2 = result / num1;
+              } else {
+                num1 = 1;
+                num2 = result;
+              }
+            }
+          }
+          break;
+
+        case '/':
+          if (constrainTarget === 0) {
+            // Constrain num1 to range
+            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * Math.min(num1, settings.maxValue)) + 1;
+            result = Math.floor(num1 / num2);
+          } else if (constrainTarget === 1) {
+            // Constrain num2 to range
+            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            result = Math.floor(Math.random() * settings.maxValue) + 1;
+            num1 = result * num2;
+          } else {
+            // Constrain result to range
+            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
+            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            num1 = result * num2;
+          }
+          break;
+      }
+    } while (
+      (num1 <= 0 || num2 <= 0 || result <= 0 ||
+       num1 > settings.maxValue || num2 > settings.maxValue || result > settings.maxValue) &&
+      attempts < maxAttempts
+    );
+
+    if (attempts >= maxAttempts) {
+      // Fallback to simple addition if we can't generate a valid problem
+      num1 = settings.minValue;
+      num2 = settings.minValue;
+      result = num1 + num2;
+    }
+
+    setProblem({ num1, num2, operator, result });
+    setShowAnswer(false);
+  };
+
+  const toggleOperator = (op: '+' | '-' | '*' | '/') => {
+    setSettings(prev => {
+      const newOperators = prev.operators.includes(op)
+        ? prev.operators.filter(o => o !== op)
+        : [...prev.operators, op];
+      return { ...prev, operators: newOperators };
+    });
+  };
+
+  const updateMinValue = (sliderIndex: number) => {
+    const value = sliderValues[sliderIndex];
+    setSettings(prev => ({
+      ...prev,
+      minValue: value,
+      maxValue: Math.max(value, prev.maxValue)
+    }));
+  };
+
+  const updateMaxValue = (sliderIndex: number) => {
+    const value = sliderValues[sliderIndex];
+    setSettings(prev => ({
+      ...prev,
+      maxValue: value,
+      minValue: Math.min(value, prev.minValue)
+    }));
+  };
+
+  const getSliderIndex = (value: number): number => {
+    const index = sliderValues.indexOf(value);
+    return index >= 0 ? index : 0;
+  };
+
+  const startPractice = () => {
+    if (settings.operators.length > 0) {
+      setShowSettings(false);
+      generateProblem();
+    }
+  };
+
+  useEffect(() => {
+    if (!showSettings && settings.operators.length > 0) {
+      generateProblem();
+    }
+  }, [settings, showSettings]);
+
+  const speakProblem = () => {
+    if (problem) {
+      const text = `${numberToRussian(problem.num1)} ${operators[problem.operator]} ${numberToRussian(problem.num2)} ${equals} ${numberToRussian(problem.result)}`;
+      speak(text);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto">
+      <div className="flex items-center mb-6">
+        <button onClick={onBack} className="mr-4 p-2 hover:bg-gray-100 rounded">
+          <ArrowLeft size={20} />
+        </button>
+        <h2 className="text-2xl font-bold">Numbers Practice</h2>
+      </div>
+
+      {showSettings ? (
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Practice Settings</h3>
+
+          {/* Operator Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-3">Select Operations:</label>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(operators).map(([op, label]) => (
+                <button
+                  key={op}
+                  onClick={() => toggleOperator(op as '+' | '-' | '*' | '/')}
+                  className={`px-4 py-3 rounded-lg font-semibold text-lg transition-all ${
+                    settings.operators.includes(op as '+' | '-' | '*' | '/')
+                      ? 'bg-blue-500 text-white border-2 border-blue-600 shadow-md'
+                      : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{op}</div>
+                  <div className="text-xs">{label}</div>
+                </button>
+              ))}
+            </div>
+            {settings.operators.length === 0 && (
+              <p className="text-red-500 text-sm mt-2">Please select at least one operation.</p>
+            )}
+          </div>
+
+          {/* Value Range Sliders */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-3">Number Range:</label>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm text-gray-600">Minimum Value:</label>
+                  <span className="text-sm font-semibold">{settings.minValue}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max={sliderValues.length - 1}
+                  value={getSliderIndex(settings.minValue)}
+                  onChange={(e) => updateMinValue(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm text-gray-600">Maximum Value:</label>
+                  <span className="text-sm font-semibold">{settings.maxValue}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max={sliderValues.length - 1}
+                  value={getSliderIndex(settings.maxValue)}
+                  onChange={(e) => updateMaxValue(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              One number (operand or result) will be within {settings.minValue}-{settings.maxValue}, others will be ≤ {settings.maxValue}
+            </p>
+          </div>
+
+          <button
+            onClick={startPractice}
+            disabled={settings.operators.length === 0}
+            className={`w-full py-3 px-4 rounded-lg font-semibold ${
+              settings.operators.length > 0
+                ? 'bg-green-500 hover:bg-green-600 text-white'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Start Practice
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="text-blue-500 hover:text-blue-700 text-sm font-medium"
+            >
+              ← Change Settings
+            </button>
+            <div className="text-sm text-gray-600">
+              Range: {settings.minValue}-{settings.maxValue} | Ops: {settings.operators.join(', ')}
+            </div>
+          </div>
+
+          {problem && (
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="text-4xl font-bold mb-6 text-blue-600">
+                {problem.num1} {problem.operator} {problem.num2} = ?
+              </div>
+
+              <div className="flex justify-center gap-4 mb-6">
+                <button
+                  onClick={() => setShowAnswer(!showAnswer)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  {showAnswer ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showAnswer ? 'Hide Answer' : 'Show Answer'}
+                </button>
+              </div>
+
+              {showAnswer && (
+                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                  <div className="text-3xl font-bold text-green-600 mb-4">
+                    {problem.result}
+                  </div>
+                  <div className="text-lg mb-4">
+                    <div className="font-semibold">In Russian:</div>
+                    <div className="text-blue-600">
+                      {numberToRussian(problem.num1)} {operators[problem.operator]} {numberToRussian(problem.num2)} {equals} {numberToRussian(problem.result)}
+                    </div>
+                  </div>
+                  <button
+                    onClick={speakProblem}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mx-auto"
+                  >
+                    <Volume2 size={20} />
+                    Listen
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={generateProblem}
+                className="flex items-center gap-2 px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 mx-auto"
+              >
+                <RefreshCw size={20} />
+                New Problem
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
+        <button
+          onClick={() => setShowFAQ(!showFAQ)}
+          className="w-full px-6 py-4 text-left font-semibold text-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-between"
+        >
+          FAQ
+          {showFAQ ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
+
+        {showFAQ && (
+          <div className="px-6 py-4 space-y-4">
+            <div>
+              <h4 className="font-semibold text-blue-600 mb-2">Alternative way to say "equals"</h4>
+              <p className="text-gray-700">
+                Instead of "равно" (equals), you can also use "будет" (will be). For example:
+                "два плюс три будет пять" (two plus three will be five).
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-blue-600 mb-2">Number pronunciation tips</h4>
+              <p className="text-gray-700">
+                Russian numbers 1-4 change their endings based on what they're counting. In math problems,
+                we use the basic forms shown here.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-blue-600 mb-2">Multiplication and Division</h4>
+              <p className="text-gray-700">
+                "умно́жить на" literally means "to multiply by". You might also hear "раз"
+                (times) in casual speech: "два раз три" instead of "два умно́жить на три".
+                For division, "раздели́ть на" means "to divide by".
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 bg-white rounded-lg shadow-lg overflow-hidden">
+        <button
+          onClick={() => setShowVocabulary(!showVocabulary)}
+          className="w-full px-6 py-4 text-left font-semibold text-lg bg-gray-50 hover:bg-gray-100 flex items-center justify-between"
+        >
+          Vocabulary
+          {showVocabulary ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
+
+        {showVocabulary && (
+          <div className="px-6 py-4">
+            <div className="mb-6">
+              <h4 className="font-semibold text-blue-600 mb-3">Basic Numbers (1-20)</h4>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                {Array.from({length: 10}, (_, i) => i + 1).map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num}</span>
+                    <span className="font-medium">{russianNumbers[num]}</span>
+                  </div>
+                ))}
+                {Array.from({length: 10}, (_, i) => i + 11).map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num}</span>
+                    <span className="font-medium">{russianNumbers[num]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold text-blue-600 mb-3">Tens (20-90)</h4>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                {[20, 30, 40, 50].map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num}</span>
+                    <span className="font-medium">{russianNumbers[num]}</span>
+                  </div>
+                ))}
+                {[60, 70, 80, 90].map(num => (
+                  <div key={num} className="flex justify-between">
+                    <span className="font-mono">{num}</span>
+                    <span className="font-medium">{russianNumbers[num]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold text-blue-600 mb-3">Hundreds</h4>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="font-mono">100</span>
+                  <span className="font-medium">сто</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">600</span>
+                  <span className="font-medium">шестьсо́т</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">200</span>
+                  <span className="font-medium">две́сти</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">700</span>
+                  <span className="font-medium">семьсо́т</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">300</span>
+                  <span className="font-medium">три́ста</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">800</span>
+                  <span className="font-medium">восемьсо́т</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">400</span>
+                  <span className="font-medium">четы́реста</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">900</span>
+                  <span className="font-medium">девятьсо́т</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">500</span>
+                  <span className="font-medium">пятьсо́т</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="font-semibold text-blue-600 mb-3">Thousands</h4>
+              <div className="grid grid-cols-1 gap-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="font-mono">1,000</span>
+                  <span className="font-medium">ты́сяча</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">2,000</span>
+                  <span className="font-medium">две ты́сячи</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">3,000-4,000</span>
+                  <span className="font-medium">три/четы́ре ты́сячи</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">5,000+</span>
+                  <span className="font-medium">пять/шесть/семь... ты́сяч</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="font-semibold text-blue-600 mb-3">Math Operations</h4>
+              <div className="grid grid-cols-1 gap-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="font-mono">+</span>
+                  <span className="font-medium">плюс</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">-</span>
+                  <span className="font-medium">ми́нус</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">×</span>
+                  <span className="font-medium">умно́жить на</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">÷</span>
+                  <span className="font-medium">раздели́ть на</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-mono">=</span>
+                  <span className="font-medium">равно́ / бу́дет</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-600 border-t pt-4">
+              <p className="mb-2">
+                <strong>Stress marks (́):</strong> Show which syllable to emphasize when speaking.
+              </p>
+              <p className="mb-2">
+                <strong>Compound numbers:</strong> Formed by combining basic numbers (e.g., 25 = два́дцать пять).
+              </p>
+              <p>
+                <strong>Resources:</strong>
+                <a href="https://en.wikibooks.org/wiki/Russian/Numbers" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                  Wikibooks Russian Numbers
+                </a> •
+                <a href="https://www.russianlessons.net/lessons/lesson2_main.php" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                  Russian Lessons
+                </a>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default NumbersPractice;
