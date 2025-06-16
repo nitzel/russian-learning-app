@@ -62,6 +62,16 @@ const App: React.FC = () => {
 
         <footer className="text-center mt-12 text-gray-500">
           <p>Practice regularly to improve your Russian language skills!</p>
+          <p>
+            <a
+              href="https://exegames.de/detailed_imprint.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline ml-1"
+            >
+              Impressum
+            </a>
+          </p>
         </footer>
       </div>
     </div>
