@@ -138,16 +138,21 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           break;
       }
     } while (
-      (num1 <= 0 || num2 <= 0 || result <= 0 ||
+      (num1 < 0 || num2 < 0 || result < 0 ||
        num1 > settings.maxValue || num2 > settings.maxValue || result > settings.maxValue) &&
       attempts < maxAttempts
     );
 
     if (attempts >= maxAttempts) {
       // Fallback to simple addition if we can't generate a valid problem
-      num1 = settings.minValue;
-      num2 = settings.minValue;
-      result = num1 + num2;
+      setProblem({
+        num1: settings.minValue,
+        num2: settings.minValue,
+        operator: '+',
+        result: num1 + num2
+      });
+      setShowAnswer(false);
+      return;
     }
 
     setProblem({ num1, num2, operator, result });
@@ -201,7 +206,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   const speakProblem = () => {
     if (problem) {
-      const text = `${numberToRussian(problem.num1)} ${operators[problem.operator]} ${numberToRussian(problem.num2)} ${equals} ${numberToRussian(problem.result)}`;
+      const text = `${numberToRussian(problem.num1)} ${operators[problem.operator]} ${numberToRussian(problem.num2)} ${equals} ${numberToRussian(problem.result, true)}`;
       speak(text);
     }
   };
@@ -332,7 +337,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   <div className="text-lg mb-4">
                     <div className="font-semibold">In Russian:</div>
                     <div className="text-blue-600">
-                      {numberToRussian(problem.num1)} {operators[problem.operator]} {numberToRussian(problem.num2)} {equals} {numberToRussian(problem.result)}
+                      {numberToRussian(problem.num1)} {operators[problem.operator]} {numberToRussian(problem.num2)} {equals} {numberToRussian(problem.result, true)}
                     </div>
                   </div>
                   <button
@@ -473,10 +478,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
             <div className="text-xs text-gray-600 border-t pt-4">
               <p className="mb-2">
-                <strong>Stress marks (́):</strong> Show which syllable to emphasize when speaking.
+                <strong>Stress marks ´ :</strong> Show which syllable to emphasize when speaking.
               </p>
               <p className="mb-2">
-                <strong>Compound numbers:</strong> Formed by combining basic numbers (e.g., 25 = два́дцать пять).
+                <strong>{numberToRussian(0, false)} / {numberToRussian(0, true)}:</strong>
+                &nbsp;
+                нулю (dative sg. from archaic нуль) is still used in mathematics and certain phrases, one of them being равно нулю.
+                <a href="https://vk.com/@femmie-rss-1038222214-1955760577" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                  Равно нолю или нулю?
+                </a>
+              </p>
+              <p className="mb-2">
+                <strong>Compound numbers:</strong> Formed by combining basic numbers (e.g., 25 = {numberToRussian(25)}).
               </p>
               <p>
                 <strong>Resources:</strong>

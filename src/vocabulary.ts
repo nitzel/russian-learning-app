@@ -17,6 +17,8 @@ export const russianNumbers: { [key: number]: string } = {
   30: 'три́дцать', 40: 'со́рок', 50: 'пятьдеся́т', 60: 'шестьдеся́т', 70: 'се́мьдесят', 80: 'во́семьдесят', 90: 'девяно́сто'
 };
 
+export const resultZero = 'нулю́';
+
 // Math operators in Russian
 export const operators = {
   '+': 'плю́с',
@@ -46,7 +48,7 @@ export const generateSliderValues = (): number[] => {
   const values: number[] = [];
 
   // 1-10
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 0; i <= 10; i++) {
     values.push(i);
   }
 
@@ -69,7 +71,11 @@ export const generateSliderValues = (): number[] => {
 };
 
 // Convert number to Russian with stress marks
-export const numberToRussian = (num: number): string => {
+export const numberToRussian = (num: number, isResult = false): string => {
+  if (isResult && num == 0) {
+    return resultZero;
+  }
+
   if (num <= 20) return russianNumbers[num] || num.toString();
   if (num < 100) {
     const tens = Math.floor(num / 10) * 10;
