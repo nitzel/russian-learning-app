@@ -36,6 +36,9 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <header className="text-center mb-12">
+          <div className="flex items-center justify-center mb-6">
+            <div className="text-4xl">🏋️</div>
+          </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
             Russian Language Practice
           </h1>
