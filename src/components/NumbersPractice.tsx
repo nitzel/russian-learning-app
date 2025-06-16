@@ -31,6 +31,10 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   });
   const [showSettings, setShowSettings] = useState(true);
 
+  const randomInRange = (min: number, max: number): number => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
   const generateProblem = () => {
     if (settings.operators.length === 0) return;
 
@@ -49,18 +53,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         case Operator.PLUS:
           if (constrainTarget === 0) {
             // Constrain num1 to range
-            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            num1 = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(1, settings.maxValue);
             result = num1 + num2;
           } else if (constrainTarget === 1) {
             // Constrain num2 to range
-            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num1 = Math.floor(Math.random() * settings.maxValue) + 1;
+            num2 = randomInRange(settings.minValue, settings.maxValue);
+            num1 = randomInRange(1, settings.maxValue);
             result = num1 + num2;
           } else {
             // Constrain result to range
-            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num1 = Math.floor(Math.random() * Math.min(result, settings.maxValue)) + 1;
+            result = randomInRange(settings.minValue, settings.maxValue);
+            num1 = randomInRange(1, Math.min(result, settings.maxValue));
             num2 = result - num1;
           }
           break;
@@ -68,18 +72,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         case Operator.MINUS:
           if (constrainTarget === 0) {
             // Constrain num1 to range
-            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * Math.min(num1, settings.maxValue)) + 1;
+            num1 = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(0, Math.min(num1, settings.maxValue));
             result = num1 - num2;
           } else if (constrainTarget === 1) {
             // Constrain num2 to range
-            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num1 = num2 + Math.floor(Math.random() * (settings.maxValue - num2)) + 1;
+            num2 = randomInRange(settings.minValue, settings.maxValue);
+            num1 = num2 + randomInRange(0, settings.maxValue - num2);
             result = num1 - num2;
           } else {
             // Constrain result to range
-            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            result = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(0, settings.maxValue);
             num1 = result + num2;
           }
           break;
@@ -87,18 +91,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         case Operator.TIMES:
           if (constrainTarget === 0) {
             // Constrain num1 to range
-            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * Math.min(Math.floor(settings.maxValue / num1), settings.maxValue)) + 1;
+            num1 = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(1, Math.min(Math.floor(settings.maxValue / num1), settings.maxValue));
             result = num1 * num2;
           } else if (constrainTarget === 1) {
             // Constrain num2 to range
-            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num1 = Math.floor(Math.random() * Math.min(Math.floor(settings.maxValue / num2), settings.maxValue)) + 1;
+            num2 = randomInRange(settings.minValue, settings.maxValue);
+            num1 = randomInRange(1, Math.min(Math.floor(settings.maxValue / num2), settings.maxValue));
             result = num1 * num2;
           } else {
             // Constrain result to range
-            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num1 = Math.floor(Math.random() * Math.min(result, settings.maxValue)) + 1;
+            result = randomInRange(settings.minValue, settings.maxValue);
+            num1 = randomInRange(1, Math.min(result, settings.maxValue));
             if (result % num1 === 0) {
               num2 = result / num1;
             } else {
@@ -121,27 +125,30 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         case Operator.DIVISON:
           if (constrainTarget === 0) {
             // Constrain num1 to range
-            num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * Math.min(num1, settings.maxValue)) + 1;
+            num1 = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(1, Math.min(num1, settings.maxValue));
             result = Math.floor(num1 / num2);
+            num2 = num1 * result;
           } else if (constrainTarget === 1) {
             // Constrain num2 to range
-            num2 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            result = Math.floor(Math.random() * settings.maxValue) + 1;
+            num2 = randomInRange(settings.minValue, settings.maxValue);
+            result = randomInRange(1, settings.maxValue);
             num1 = result * num2;
           } else {
             // Constrain result to range
-            result = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
-            num2 = Math.floor(Math.random() * settings.maxValue) + 1;
+            result = randomInRange(settings.minValue, settings.maxValue);
+            num2 = randomInRange(1, settings.maxValue);
             num1 = result * num2;
           }
+          result = num1/num2; // might be 0/0, then result=NaN, need to retry
           break;
       }
     } while (
       (
         [num1, num2, result].some(Number.isNaN) ||
-        num1! < 0 || num2! < 0 || result! < 0 ||
-        num1! > settings.maxValue || num2! > settings.maxValue || result! > settings.maxValue
+        [num1, num2, result].some(x => x < 0) ||
+        // if maxValue==0, then allow maxValue 1 for some variation
+        [num1, num2, result].some(x => x > (settings.maxValue || 1))
       ) && attempts < maxAttempts
     );
 
