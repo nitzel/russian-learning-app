@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Eye, EyeOff, ArrowLeft, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { russianNumbers, operators, equals, willBe, numberToRussian, generateSliderValues, speak } from '../vocabulary';
+import { russianNumbers, operators, Operator, operatorSymbols, equals, willBe, numberToRussian, generateSliderValues, speak, Operators } from '../vocabulary';
 
 // Types
 interface MathProblem {
   num1: number;
   num2: number;
-  operator: '+' | '-' | '*' | '/';
+  operator: Operator;
   result: number;
 }
 
 interface MathSettings {
-  operators: Array<'+' | '-' | '*' | '/'>;
+  operators: Array<Operator>;
   minValue: number;
   maxValue: number;
 }
@@ -25,7 +25,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showVocabulary, setShowVocabulary] = useState(false);
   const [settings, setSettings] = useState<MathSettings>({
-    operators: ['+'],
+    operators: [Operator.PLUS],
     minValue: 1,
     maxValue: 20
   });
@@ -35,7 +35,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (settings.operators.length === 0) return;
 
     const operator = settings.operators[Math.floor(Math.random() * settings.operators.length)];
-    let num1, num2, result;
+    let num1: number = 1, num2: number = 1, result: number = 1;
     let attempts = 0;
     const maxAttempts = 100;
 
@@ -46,7 +46,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       const constrainTarget = Math.floor(Math.random() * 3); // 0 = num1, 1 = num2, 2 = result
 
       switch (operator) {
-        case '+':
+        case Operator.PLUS:
           if (constrainTarget === 0) {
             // Constrain num1 to range
             num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
@@ -65,7 +65,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           }
           break;
 
-        case '-':
+        case Operator.MINUS:
           if (constrainTarget === 0) {
             // Constrain num1 to range
             num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
@@ -84,7 +84,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           }
           break;
 
-        case '*':
+        case Operator.TIMES:
           if (constrainTarget === 0) {
             // Constrain num1 to range
             num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
@@ -118,7 +118,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           }
           break;
 
-        case '/':
+        case Operator.DIVISON:
           if (constrainTarget === 0) {
             // Constrain num1 to range
             num1 = Math.floor(Math.random() * (settings.maxValue - settings.minValue + 1)) + settings.minValue;
@@ -138,8 +138,8 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           break;
       }
     } while (
-      (num1 < 0 || num2 < 0 || result < 0 ||
-       num1 > settings.maxValue || num2 > settings.maxValue || result > settings.maxValue) &&
+      (num1! < 0 || num2! < 0 || result! < 0 ||
+       num1! > settings.maxValue || num2! > settings.maxValue || result! > settings.maxValue) &&
       attempts < maxAttempts
     );
 
@@ -148,18 +148,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       setProblem({
         num1: settings.minValue,
         num2: settings.minValue,
-        operator: '+',
-        result: num1 + num2
+        operator: Operator.PLUS,
+        result: settings.minValue + settings.minValue
       });
       setShowAnswer(false);
       return;
     }
 
-    setProblem({ num1, num2, operator, result });
+    setProblem({ num1: num1!, num2: num2!, operator, result: result! });
     setShowAnswer(false);
   };
 
-  const toggleOperator = (op: '+' | '-' | '*' | '/') => {
+  const toggleOperator = (op: Operator) => {
     setSettings(prev => {
       const newOperators = prev.operators.includes(op)
         ? prev.operators.filter(o => o !== op)
@@ -228,18 +228,18 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           <div className="mb-6">
             <label className="block text-sm font-medium mb-3">Select Operations:</label>
             <div className="flex flex-wrap gap-3">
-              {Object.entries(operators).map(([op, label]) => (
+              {Operators.map(op => (
                 <button
                   key={op}
-                  onClick={() => toggleOperator(op as '+' | '-' | '*' | '/')}
+                  onClick={() => toggleOperator(op)}
                   className={`px-4 py-3 rounded-lg font-semibold text-lg transition-all ${
-                    settings.operators.includes(op as '+' | '-' | '*' | '/')
+                    settings.operators.includes(op)
                       ? 'bg-blue-500 text-white border-2 border-blue-600 shadow-md'
                       : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200'
                   }`}
                 >
-                  <div className="text-2xl mb-1">{op}</div>
-                  <div className="text-xs">{label}</div>
+                  <div className="text-2xl mb-1">{operatorSymbols[op]}</div>
+                  <div className="text-xs">{operators[op]}</div>
                 </button>
               ))}
             </div>
@@ -316,7 +316,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           {problem && (
             <div className="bg-white rounded-lg shadow-lg p-8 text-center">
               <div className="text-4xl font-bold mb-6 text-blue-600">
-                {problem.num1} {problem.operator} {problem.num2} = ?
+                {problem.num1} {operatorSymbols[problem.operator]} {problem.num2} = ?
               </div>
 
               <div className="flex justify-center gap-4 mb-6">
@@ -465,7 +465,7 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div className="grid grid-cols-1 gap-y-2 text-sm">
                 {Object.entries(operators).map(([symbol, text]) => (
                   <div key={symbol} className="flex justify-between">
-                    <span className="font-mono">{symbol === '*' ? '×' : symbol === '/' ? '÷' : symbol}</span>
+                    <span className="font-mono">{operatorSymbols[symbol as Operator]}</span>
                     <span className="font-medium">{text}</span>
                   </div>
                 ))}

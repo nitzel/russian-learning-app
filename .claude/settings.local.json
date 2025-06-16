@@ -5,7 +5,8 @@
       "Bash(npm start)",
       "Bash(git commit:*)",
       "Bash(mkdir:*)",
-      "WebFetch(domain:ru.wiktionary.org)"
+      "WebFetch(domain:ru.wiktionary.org)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }

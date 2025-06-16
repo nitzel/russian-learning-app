@@ -19,12 +19,29 @@ export const russianNumbers: { [key: number]: string } = {
 
 export const resultZero = 'нулю́';
 
+export enum Operator {
+ PLUS = '+',
+ MINUS = '-',
+ TIMES = '*' ,
+ DIVISON = '/',
+}
+
+export const Operators = Object.values(Operator);
+
 // Math operators in Russian
 export const operators = {
-  '+': 'плю́с',
-  '-': 'ми́нус',
-  '*': 'умно́жить на',
-  '/': 'раздели́ть на'
+  [Operator.PLUS]: 'плю́с',
+  [Operator.MINUS]: 'ми́нус',
+  [Operator.TIMES]: 'умно́жить на',
+  [Operator.DIVISON]: 'раздели́ть на',
+};
+
+// Math operator symbols for display
+export const operatorSymbols = {
+  [Operator.PLUS]: '+',
+  [Operator.MINUS]: '−',
+  [Operator.TIMES]: '×',
+  [Operator.DIVISON]: '÷',
 };
 
 // Math equals in Russian
