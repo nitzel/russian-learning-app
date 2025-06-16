@@ -138,9 +138,11 @@ const NumbersPractice: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           break;
       }
     } while (
-      (num1! < 0 || num2! < 0 || result! < 0 ||
-       num1! > settings.maxValue || num2! > settings.maxValue || result! > settings.maxValue) &&
-      attempts < maxAttempts
+      (
+        [num1, num2, result].some(Number.isNaN) ||
+        num1! < 0 || num2! < 0 || result! < 0 ||
+        num1! > settings.maxValue || num2! > settings.maxValue || result! > settings.maxValue
+      ) && attempts < maxAttempts
     );
 
     if (attempts >= maxAttempts) {
